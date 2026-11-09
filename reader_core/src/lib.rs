@@ -54,6 +54,7 @@ fn initialize_loaded_title(title: &LoadedTitle) {
         LoadedTitle::Or | LoadedTitle::As => gen6::init_oras(),
         LoadedTitle::X | LoadedTitle::Y => gen6::init_xy(),
         LoadedTitle::Transporter => transporter::init_transporter(),
+        LoadedTitle::CrystalJp => crystal::init_crystal_jp(),
         LoadedTitle::CrystalEn
         | LoadedTitle::CrystalDe
         | LoadedTitle::CrystalFr
@@ -77,7 +78,8 @@ fn run_loaded_title_frame(title: &LoadedTitle) {
         LoadedTitle::Or | LoadedTitle::As => gen6::run_oras_frame(),
         LoadedTitle::X | LoadedTitle::Y => gen6::run_xy_frame(),
         LoadedTitle::Transporter => transporter::run_frame(),
-        LoadedTitle::CrystalEn
+        LoadedTitle::CrystalJp
+        | LoadedTitle::CrystalEn
         | LoadedTitle::CrystalDe
         | LoadedTitle::CrystalFr
         | LoadedTitle::CrystalEs
