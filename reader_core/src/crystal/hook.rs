@@ -127,3 +127,10 @@ pub fn init_crystal() {
         gb_read_mem = 0x1af17c,
     );
 }
+
+pub fn init_crystal_jp() {
+    utils::hook_game_branch!(
+        game_name = crystal,
+        gb_read_mem = 0x1af17c,
+    );
+}
