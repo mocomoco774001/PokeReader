@@ -14,6 +14,7 @@ pub enum LoadedTitle {
     Us = 0x00040000001B5000,
     Um = 0x00040000001B5100,
     Transporter = 0x00040000000C9C00,
+    CrystalJp = 0x0004000000172500,
     CrystalEn = 0x0004000000172800,
     CrystalDe = 0x0004000000172B00,
     CrystalFr = 0x0004000000172E00,
@@ -74,7 +75,8 @@ fn get_citra_title_version(title: LoadedTitle) -> UpdateInfo {
             version: 5,
             debug_info: None,
         },
-        LoadedTitle::CrystalEn
+        LoadedTitle::CrystalJp
+        | LoadedTitle::CrystalEn
         | LoadedTitle::CrystalDe
         | LoadedTitle::CrystalFr
         | LoadedTitle::CrystalEs
@@ -125,6 +127,7 @@ pub fn loaded_title() -> &'static Result<LoadedTitle, TitleError> {
             | (LoadedTitle::X, 5)
             | (LoadedTitle::Y, 5)
             | (LoadedTitle::Transporter, 5)
+            | (LoadedTitle::CrystalJp, 0)
             | (LoadedTitle::CrystalEn, 0)
             | (LoadedTitle::CrystalDe, 0)
             | (LoadedTitle::CrystalFr, 0)
