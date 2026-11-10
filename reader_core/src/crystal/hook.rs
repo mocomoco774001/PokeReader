@@ -16,6 +16,8 @@ static mut LAST_HOOK_R0: u32 = 0;
 static mut LAST_HOOK_PC: u16 = 0;
 static mut DIV_READ_COUNT: u32 = 0;
 static mut LAST_DIV_READ_PC: u16 = 0;
+static mut IO_READ_COUNTS: [u32; 128] = [0; 128];
+static mut IO_LAST_READ_PC: [u16; 128] = [0; 128];
 
 pub fn measured_div() -> u16 {
     unsafe { (ADIV as u16) << 8 | SDIV as u16 }
@@ -47,6 +49,14 @@ pub fn div_read_count() -> u32 {
 
 pub fn last_div_read_pc() -> u16 {
     unsafe { LAST_DIV_READ_PC }
+}
+
+pub fn io_read_count(index: u8) -> u32 {
+    unsafe { IO_READ_COUNTS[index as usize] }
+}
+
+pub fn io_last_read_pc(index: u8) -> u16 {
+    unsafe { IO_LAST_READ_PC[index as usize] }
 }
 
 // This isn't currently used, but it's been helpful
@@ -130,6 +140,13 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
     let reader = Gen2Reader::crystal();
     let pc = reader.pc_reg();
     unsafe { LAST_HOOK_PC = pc; }
+    if (0xff00..0xff80).contains(&(regs[0] as usize)) {
+        let index = (regs[0] as usize - 0xff00) as usize;
+        unsafe {
+            IO_READ_COUNTS[index] = IO_READ_COUNTS[index].wrapping_add(1);
+            IO_LAST_READ_PC[index] = pc;
+        }
+    }
     if regs[0] != 0xff04 {
         return;
     }
