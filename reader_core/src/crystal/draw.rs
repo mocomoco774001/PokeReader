@@ -1,5 +1,5 @@
 use super::hook::{
-    add_div_tracker, div_read_count, hook_call_count, last_div_read_pc, last_hook_r0,
+    add_div_tracker, div_read_count, hook_call_count, last_div_read_pc, last_hook_pc, last_hook_r0,
     measured_div, rng_advance,
     sub_div_tracker,
 };
@@ -44,6 +44,7 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("TID {}", reader.trainer_id());
     pnp::println!("Hook Calls {}", hook_call_count());
     pnp::println!("Last R0 {:08X}", last_hook_r0());
+    pnp::println!("Last Hook PC {:04X}", last_hook_pc());
     pnp::println!("DIV Reads {}", div_read_count());
     pnp::println!("Last PC {:04X}", last_div_read_pc());
 }
