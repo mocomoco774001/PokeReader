@@ -1,5 +1,6 @@
 use super::hook::{
-    add_div_tracker, div_read_count, last_div_read_pc, measured_div, rng_advance,
+    add_div_tracker, div_read_count, hook_call_count, last_div_read_pc, last_hook_r0,
+    measured_div, rng_advance,
     sub_div_tracker,
 };
 use super::pk2::Pk2;
@@ -41,6 +42,8 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("Advances {}", rng_advance());
     pnp::println!("");
     pnp::println!("TID {}", reader.trainer_id());
+    pnp::println!("Hook Calls {}", hook_call_count());
+    pnp::println!("Last R0 {:08X}", last_hook_r0());
     pnp::println!("DIV Reads {}", div_read_count());
     pnp::println!("Last PC {:04X}", last_div_read_pc());
 }
