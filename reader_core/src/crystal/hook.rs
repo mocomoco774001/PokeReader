@@ -13,6 +13,7 @@ static mut SDIV: u8 = 0;
 static mut CYCLE_COUNTER: u32 = 0;
 static mut HOOK_CALL_COUNT: u32 = 0;
 static mut LAST_HOOK_R0: u32 = 0;
+static mut LAST_HOOK_PC: u16 = 0;
 static mut DIV_READ_COUNT: u32 = 0;
 static mut LAST_DIV_READ_PC: u16 = 0;
 
@@ -34,6 +35,10 @@ pub fn hook_call_count() -> u32 {
 
 pub fn last_hook_r0() -> u32 {
     unsafe { LAST_HOOK_R0 }
+}
+
+pub fn last_hook_pc() -> u16 {
+    unsafe { LAST_HOOK_PC }
 }
 
 pub fn div_read_count() -> u32 {
@@ -122,6 +127,9 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
         HOOK_CALL_COUNT = HOOK_CALL_COUNT.wrapping_add(1);
         LAST_HOOK_R0 = regs[0];
     }
+    let reader = Gen2Reader::crystal();
+    let pc = reader.pc_reg();
+    unsafe { LAST_HOOK_PC = pc; }
     if regs[0] != 0xff04 {
         return;
     }
