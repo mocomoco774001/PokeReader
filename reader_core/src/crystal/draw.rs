@@ -1,4 +1,7 @@
-use super::hook::{add_div_tracker, measured_div, rng_advance, sub_div_tracker};
+use super::hook::{
+    add_div_tracker, div_read_count, last_div_read_pc, measured_div, rng_advance,
+    sub_div_tracker,
+};
 use super::pk2::Pk2;
 use super::reader::Gen2Reader;
 pub use crate::draw::draw_header;
@@ -38,6 +41,8 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("Advances {}", rng_advance());
     pnp::println!("");
     pnp::println!("TID {}", reader.trainer_id());
+    pnp::println!("DIV Reads {}", div_read_count());
+    pnp::println!("Last PC {:04X}", last_div_read_pc());
 }
 
 pub fn draw_pkx(pkx: &Pk2) {
