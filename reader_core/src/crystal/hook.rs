@@ -11,6 +11,8 @@ static mut RNG_ADVANCE: u32 = 0;
 static mut ADIV: u8 = 0;
 static mut SDIV: u8 = 0;
 static mut CYCLE_COUNTER: u32 = 0;
+static mut HOOK_CALL_COUNT: u32 = 0;
+static mut LAST_HOOK_R0: u32 = 0;
 static mut DIV_READ_COUNT: u32 = 0;
 static mut LAST_DIV_READ_PC: u16 = 0;
 
@@ -24,6 +26,14 @@ pub fn rng_advance() -> u32 {
 
 pub fn reset_rng_advance() {
     unsafe { RNG_ADVANCE = 0 };
+}
+
+pub fn hook_call_count() -> u32 {
+    unsafe { HOOK_CALL_COUNT }
+}
+
+pub fn last_hook_r0() -> u32 {
+    unsafe { LAST_HOOK_R0 }
 }
 
 pub fn div_read_count() -> u32 {
@@ -108,6 +118,10 @@ pub fn sub_div_tracker() -> &'static DivTracker {
 }
 
 fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
+    unsafe {
+        HOOK_CALL_COUNT = HOOK_CALL_COUNT.wrapping_add(1);
+        LAST_HOOK_R0 = regs[0];
+    }
     if regs[0] != 0xff04 {
         return;
     }
