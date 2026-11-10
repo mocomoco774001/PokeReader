@@ -11,6 +11,8 @@ static mut RNG_ADVANCE: u32 = 0;
 static mut ADIV: u8 = 0;
 static mut SDIV: u8 = 0;
 static mut CYCLE_COUNTER: u32 = 0;
+static mut DIV_READ_COUNT: u32 = 0;
+static mut LAST_DIV_READ_PC: u16 = 0;
 
 pub fn measured_div() -> u16 {
     unsafe { (ADIV as u16) << 8 | SDIV as u16 }
@@ -22,6 +24,14 @@ pub fn rng_advance() -> u32 {
 
 pub fn reset_rng_advance() {
     unsafe { RNG_ADVANCE = 0 };
+}
+
+pub fn div_read_count() -> u32 {
+    unsafe { DIV_READ_COUNT }
+}
+
+pub fn last_div_read_pc() -> u16 {
+    unsafe { LAST_DIV_READ_PC }
 }
 
 // This isn't currently used, but it's been helpful
@@ -104,6 +114,10 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
 
     let reader = Gen2Reader::crystal();
     let pc = reader.pc_reg();
+    unsafe {
+        DIV_READ_COUNT = DIV_READ_COUNT.wrapping_add(1);
+        LAST_DIV_READ_PC = pc;
+    }
     const RNG_DIV_READ_1: u16 = 0x2b5 + 1;
     const RNG_DIV_READ_2: u16 = 0x2bd + 1;
     if pc == RNG_DIV_READ_1 {
