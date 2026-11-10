@@ -1,6 +1,6 @@
 use super::hook::{
     add_div_tracker, div_read_count, hook_call_count, last_div_read_pc, last_hook_pc, last_hook_r0,
-    measured_div, rng_advance,
+    measured_div, rng_advance, io_read_count, io_last_read_pc,
     sub_div_tracker,
 };
 use super::pk2::Pk2;
@@ -47,6 +47,10 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("Last Hook PC {:04X}", last_hook_pc());
     pnp::println!("DIV Reads {}", div_read_count());
     pnp::println!("Last PC {:04X}", last_div_read_pc());
+    pnp::println!("IO reads FF04/FF41/FF44/FF00");
+    for index in [0x04u8, 0x41, 0x44, 0x00] {
+        pnp::println!("FF{:02X}: {} PC {:04X}", index, io_read_count(index), io_last_read_pc(index));
+    }
 }
 
 pub fn draw_pkx(pkx: &Pk2) {
