@@ -181,9 +181,16 @@ pub fn init_crystal() {
     );
 }
 
+
+// Japanese Crystal's immediate-address memory-read path.
+fn gb_read_mem_immediate(regs: &[u32], stack_pointer: *mut u32) {
+    gb_read_mem(regs, stack_pointer);
+}
+
 pub fn init_crystal_jp() {
     utils::hook_game_branch!(
         game_name = crystal,
         gb_read_mem = 0x1af17c,
+        gb_read_mem_immediate = 0x1af11c,
     );
 }
