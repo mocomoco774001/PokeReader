@@ -182,8 +182,10 @@ pub fn init_crystal() {
 }
 
 pub fn init_crystal_jp() {
+    // Japanese Crystal has a separate GB memory-read routine.
+    // Hook the JP entry point used by game_lib::read_gb_mem_jp.
     utils::hook_game_branch!(
         game_name = crystal,
-        gb_read_mem = 0x1af17c,
+        gb_read_mem = 0x169018,
     );
 }
