@@ -1,6 +1,5 @@
 use super::hook::{
-    add_div_tracker, div_read_count, hook_call_count, last_div_read_pc, last_hook_pc, last_hook_r0,
-    measured_div, rng_advance, io_read_count, io_last_read_pc,
+    add_div_tracker, div_read_count, hook_call_count, io_read_count, measured_div, rng_advance,
     sub_div_tracker,
 };
 use super::pk2::Pk2;
@@ -43,14 +42,20 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("");
     pnp::println!("TID {}", reader.trainer_id());
     pnp::println!("Hook Calls {}", hook_call_count());
-    pnp::println!("Last R0 {:08X}", last_hook_r0());
-    pnp::println!("Last Hook PC {:04X}", last_hook_pc());
     pnp::println!("DIV Reads {}", div_read_count());
-    pnp::println!("Last PC {:04X}", last_div_read_pc());
-    pnp::println!("IO register reads: timer / LCD");
-    for index in [0x04u8, 0x05, 0x06, 0x07, 0x40, 0x41, 0x44] {
-        pnp::println!("FF{:02X}: {} PC {:04X}", index, io_read_count(index), io_last_read_pc(index));
-    }
+    pnp::println!(
+        "Timer 04:{} 05:{} 06:{} 07:{}",
+        io_read_count(0x04),
+        io_read_count(0x05),
+        io_read_count(0x06),
+        io_read_count(0x07)
+    );
+    pnp::println!(
+        "LCD 40:{} 41:{} 44:{}",
+        io_read_count(0x40),
+        io_read_count(0x41),
+        io_read_count(0x44)
+    );
 }
 
 pub fn draw_pkx(pkx: &Pk2) {
