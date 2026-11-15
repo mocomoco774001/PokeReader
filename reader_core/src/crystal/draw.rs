@@ -40,7 +40,7 @@ pub fn draw_rng(reader: &Gen2Reader) {
     pnp::println!("State {:04X}", reader.rng_state());
     pnp::println!("ADIV Hook Hits {}", adiv_hook_hits());
     pnp::println!("SDIV Hook Hits {}", sdiv_hook_hits());
-    pnp::println!("RNG Calls since reset {}", rng_advance());
+    pnp::println!("RNG Calls {}", rng_advance());
     pnp::println!("Last DIV PC {:04X}", last_div_read_pc());
     pnp::println!("");
     pnp::println!("TID {}", reader.trainer_id());
