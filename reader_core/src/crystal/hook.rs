@@ -147,22 +147,26 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
         HOOK_CALL_COUNT = HOOK_CALL_COUNT.wrapping_add(1);
         LAST_HOOK_R0 = regs[0];
     }
-    let reader = Gen2Reader::crystal();
-    let pc = reader.pc_reg();
-    unsafe { LAST_HOOK_PC = pc; }
+    // Most calls are unrelated Game Boy memory reads. Avoid reading the
+    // game's PC register on every hook invocation: that extra memory access
+    // was causing noticeable slowdown on the 3DS.
     if (0xff00..0xff80).contains(&(regs[0] as usize)) {
         let index = (regs[0] as usize - 0xff00) as usize;
         unsafe {
             IO_READ_COUNTS[index] = IO_READ_COUNTS[index].wrapping_add(1);
-            IO_LAST_READ_PC[index] = pc;
         }
     }
     if regs[0] != 0xff04 {
         return;
     }
 
+    // Only DIV reads need the current Game Boy PC.
     let reader = Gen2Reader::crystal();
     let pc = reader.pc_reg();
+    unsafe {
+        LAST_HOOK_PC = pc;
+        IO_LAST_READ_PC[0x04] = pc;
+    }
     unsafe {
         DIV_READ_COUNT = DIV_READ_COUNT.wrapping_add(1);
         LAST_DIV_READ_PC = pc;
