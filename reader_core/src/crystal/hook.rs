@@ -15,6 +15,8 @@ static mut HOOK_CALL_COUNT: u32 = 0;
 static mut LAST_HOOK_R0: u32 = 0;
 static mut LAST_HOOK_PC: u16 = 0;
 static mut DIV_READ_COUNT: u32 = 0;
+static mut ADIV_HOOK_HITS: u32 = 0;
+static mut SDIV_HOOK_HITS: u32 = 0;
 static mut LAST_DIV_READ_PC: u16 = 0;
 static mut IO_READ_COUNTS: [u32; 128] = [0; 128];
 static mut IO_LAST_READ_PC: [u16; 128] = [0; 128];
@@ -49,6 +51,14 @@ pub fn div_read_count() -> u32 {
 
 pub fn last_div_read_pc() -> u16 {
     unsafe { LAST_DIV_READ_PC }
+}
+
+pub fn adiv_hook_hits() -> u32 {
+    unsafe { ADIV_HOOK_HITS }
+}
+
+pub fn sdiv_hook_hits() -> u32 {
+    unsafe { SDIV_HOOK_HITS }
 }
 
 pub fn io_read_count(index: u8) -> u32 {
@@ -161,14 +171,20 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
     const RNG_DIV_READ_2: u16 = 0x2bd + 1;
     if pc == RNG_DIV_READ_1 {
         let div = reader.div();
-        unsafe { ADIV = div };
+        unsafe {
+            ADIV = div;
+            ADIV_HOOK_HITS = ADIV_HOOK_HITS.wrapping_add(1);
+        }
 
         unsafe { ADD_DIV_TRACKER.update(div) };
         unsafe { RNG_ADVANCE = RNG_ADVANCE.wrapping_add(1) };
     }
     if pc == RNG_DIV_READ_2 {
         let div = reader.div();
-        unsafe { SDIV = div };
+        unsafe {
+            SDIV = div;
+            SDIV_HOOK_HITS = SDIV_HOOK_HITS.wrapping_add(1);
+        }
         unsafe { SUB_DIV_TRACKER.update(div) };
     }
 }
