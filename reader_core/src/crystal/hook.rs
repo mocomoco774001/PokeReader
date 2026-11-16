@@ -5,21 +5,10 @@ const DIV_INCREMENTS: [u8; 16] = [
     0x12, 0x12, 0x12, 0x13, 0x12, 0x12, 0x13, 0x12, 0x12, 0x13, 0x12, 0x12, 0x13, 0x12, 0x12, 0x13,
 ];
 
-// Don't worry, I don't feel great about this either
-// This is hacky while explorations are happening
+// Minimal state required for the Crystal RNG measurement.
 static mut RNG_ADVANCE: u32 = 0;
 static mut ADIV: u8 = 0;
 static mut SDIV: u8 = 0;
-static mut CYCLE_COUNTER: u32 = 0;
-static mut HOOK_CALL_COUNT: u32 = 0;
-static mut LAST_HOOK_R0: u32 = 0;
-static mut LAST_HOOK_PC: u16 = 0;
-static mut DIV_READ_COUNT: u32 = 0;
-static mut ADIV_HOOK_HITS: u32 = 0;
-static mut SDIV_HOOK_HITS: u32 = 0;
-static mut LAST_DIV_READ_PC: u16 = 0;
-static mut IO_READ_COUNTS: [u32; 128] = [0; 128];
-static mut IO_LAST_READ_PC: [u16; 128] = [0; 128];
 
 pub fn measured_div() -> u16 {
     unsafe { (ADIV as u16) << 8 | SDIV as u16 }
@@ -33,49 +22,6 @@ pub fn reset_rng_advance() {
     unsafe { RNG_ADVANCE = 0 };
 }
 
-pub fn hook_call_count() -> u32 {
-    unsafe { HOOK_CALL_COUNT }
-}
-
-pub fn last_hook_r0() -> u32 {
-    unsafe { LAST_HOOK_R0 }
-}
-
-pub fn last_hook_pc() -> u16 {
-    unsafe { LAST_HOOK_PC }
-}
-
-pub fn div_read_count() -> u32 {
-    unsafe { DIV_READ_COUNT }
-}
-
-pub fn last_div_read_pc() -> u16 {
-    unsafe { LAST_DIV_READ_PC }
-}
-
-pub fn adiv_hook_hits() -> u32 {
-    unsafe { ADIV_HOOK_HITS }
-}
-
-pub fn sdiv_hook_hits() -> u32 {
-    unsafe { SDIV_HOOK_HITS }
-}
-
-pub fn io_read_count(index: u8) -> u32 {
-    unsafe { IO_READ_COUNTS[index as usize] }
-}
-
-pub fn io_last_read_pc(index: u8) -> u16 {
-    unsafe { IO_LAST_READ_PC[index as usize] }
-}
-
-// This isn't currently used, but it's been helpful
-fn update_cycle_counter(regs: &[u32], _stack_pointer: *mut u32) {
-    let cycle_counter = regs[0];
-    unsafe { CYCLE_COUNTER = CYCLE_COUNTER.wrapping_add(cycle_counter) };
-}
-
-#[repr(C)]
 pub struct DivTracker {
     last_div: u8,
     index: usize,
@@ -143,19 +89,8 @@ pub fn sub_div_tracker() -> &'static DivTracker {
 }
 
 fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
-    unsafe {
-        HOOK_CALL_COUNT = HOOK_CALL_COUNT.wrapping_add(1);
-        LAST_HOOK_R0 = regs[0];
-    }
-    // Most calls are unrelated Game Boy memory reads. Avoid reading the
-    // game's PC register on every hook invocation: that extra memory access
-    // was causing noticeable slowdown on the 3DS.
-    if (0xff00..0xff80).contains(&(regs[0] as usize)) {
-        let index = (regs[0] as usize - 0xff00) as usize;
-        unsafe {
-            IO_READ_COUNTS[index] = IO_READ_COUNTS[index].wrapping_add(1);
-        }
-    }
+    // Ignore every Game Boy memory read except DIV. The diagnostic counters
+    // were useful during hook discovery, but are not needed for RNG tracking.
     if regs[0] != 0xff04 {
         return;
     }
@@ -163,14 +98,6 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
     // Only DIV reads need the current Game Boy PC.
     let reader = Gen2Reader::crystal();
     let pc = reader.pc_reg();
-    unsafe {
-        LAST_HOOK_PC = pc;
-        IO_LAST_READ_PC[0x04] = pc;
-    }
-    unsafe {
-        DIV_READ_COUNT = DIV_READ_COUNT.wrapping_add(1);
-        LAST_DIV_READ_PC = pc;
-    }
     const RNG_DIV_READ_1: u16 = 0x2b5 + 1;
     const RNG_DIV_READ_2: u16 = 0x2bd + 1;
     if pc == RNG_DIV_READ_1 {
