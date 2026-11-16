@@ -1,7 +1,4 @@
-use super::hook::{
-    add_div_tracker, adiv_hook_hits, div_read_count, hook_call_count, io_read_count,
-    last_div_read_pc, measured_div, rng_advance, sdiv_hook_hits, sub_div_tracker,
-};
+use super::hook::{add_div_tracker, measured_div, rng_advance, sub_div_tracker};
 use super::pk2::Pk2;
 use super::reader::Gen2Reader;
 pub use crate::draw::draw_header;
@@ -38,27 +35,9 @@ pub fn draw_rng(reader: &Gen2Reader) {
     }
     pnp::println!("DIV {:04X}", measured_div());
     pnp::println!("State {:04X}", reader.rng_state());
-    pnp::println!("ADIV Hook Hits {}", adiv_hook_hits());
-    pnp::println!("SDIV Hook Hits {}", sdiv_hook_hits());
     pnp::println!("Advances {}", rng_advance());
-    pnp::println!("Last DIV PC {:04X}", last_div_read_pc());
     pnp::println!("");
     pnp::println!("TID {}", reader.trainer_id());
-    pnp::println!("Hook Calls {}", hook_call_count());
-    pnp::println!("DIV Reads {}", div_read_count());
-    pnp::println!(
-        "Timer 04:{} 05:{} 06:{} 07:{}",
-        io_read_count(0x04),
-        io_read_count(0x05),
-        io_read_count(0x06),
-        io_read_count(0x07)
-    );
-    pnp::println!(
-        "LCD 40:{} 41:{} 44:{}",
-        io_read_count(0x40),
-        io_read_count(0x41),
-        io_read_count(0x44)
-    );
 }
 
 pub fn draw_pkx(pkx: &Pk2) {
