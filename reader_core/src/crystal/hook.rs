@@ -10,6 +10,12 @@ static mut RNG_ADVANCE: u32 = 0;
 static mut ADIV: u8 = 0;
 static mut SDIV: u8 = 0;
 
+// This hook is required by the existing English Crystal hook setup.
+fn update_cycle_counter(regs: &[u32], _stack_pointer: *mut u32) {
+    // Retain the original cycle-counter hook as a no-op for the Japanese build.
+    let _ = regs;
+}
+
 pub fn measured_div() -> u16 {
     unsafe { (ADIV as u16) << 8 | SDIV as u16 }
 }
@@ -104,7 +110,6 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
         let div = reader.div();
         unsafe {
             ADIV = div;
-            ADIV_HOOK_HITS = ADIV_HOOK_HITS.wrapping_add(1);
         }
 
         unsafe { ADD_DIV_TRACKER.update(div) };
@@ -114,7 +119,6 @@ fn gb_read_mem(regs: &[u32], _stack_pointer: *mut u32) {
         let div = reader.div();
         unsafe {
             SDIV = div;
-            SDIV_HOOK_HITS = SDIV_HOOK_HITS.wrapping_add(1);
         }
         unsafe { SUB_DIV_TRACKER.update(div) };
     }
